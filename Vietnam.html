@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#F2F0EB">
-    <title>Vietnam Grand Tour - H5 Edition</title>
+    <title>Vietnam Grand Tour - Immersive H5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --app-height: 100dvh; /* Dynamic Viewport Height for mobile browsers */
+            --app-height: 100dvh;
         }
 
         body {
@@ -18,38 +18,37 @@
             color: #5C5C5C;
             height: var(--app-height);
             width: 100vw;
-            overflow: hidden; /* Prevent body scroll */
+            overflow: hidden;
             -webkit-tap-highlight-color: transparent;
         }
         
         .font-serif { font-family: 'Playfair Display', serif; }
         
-        /* H5 Slide Transition */
-        .slide-enter { 
-            opacity: 0; 
-            transform: translateY(20px) scale(0.98); 
-        }
+        /* Slide Transitions */
+        .slide-enter { opacity: 0; transform: translateY(20px) scale(0.98); }
         .slide-enter-active {
-            opacity: 1; 
-            transform: translateY(0) scale(1); 
+            opacity: 1; transform: translateY(0) scale(1); 
             transition: all 0.6s cubic-bezier(0.2, 1, 0.3, 1);
         }
         
-        /* Glassmorphism - Adaptive for Mobile */
+        /* Glassmorphism */
         .glass-panel {
-            background: rgba(255, 255, 255, 0.85); /* Higher opacity for mobile readability */
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.80); /* Slightly more transparent */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-top: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+            box-shadow: 0 -10px 60px rgba(0,0,0,0.08);
+            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
         }
         
+        /* Desktop override */
         @media (min-width: 768px) {
             .glass-panel {
                 background: rgba(255, 255, 255, 0.75);
                 border-right: 1px solid rgba(255, 255, 255, 0.5);
                 border-top: none;
                 box-shadow: 20px 0 40px rgba(0,0,0,0.03);
+                transform: none !important; /* Disable slide down on desktop */
             }
         }
 
@@ -59,25 +58,29 @@
             backdrop-filter: blur(10px);
         }
 
-        /* Ken Burns Effect */
-        .ken-burns {
-            animation: kenBurns 25s ease-out infinite alternate;
-        }
-        @keyframes kenBurns {
-            from { transform: scale(1); }
-            to { transform: scale(1.15); }
-        }
+        /* Ken Burns */
+        .ken-burns { animation: kenBurns 30s ease-out infinite alternate; }
+        @keyframes kenBurns { from { transform: scale(1); } to { transform: scale(1.15); } }
 
-        /* Hide Scrollbar but keep functionality */
+        /* Utilities */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Safe Area padding for iPhone X+ */
         .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        .safe-pt { padding-top: max(20px, env(safe-area-inset-top)); }
         
-        /* Utility for Morandi colors */
-        .text-morandi-green { color: #7D9D9C; }
-        .bg-morandi-green { background-color: #7D9D9C; }
+        /* Full Screen State Class */
+        .sheet-hidden {
+            transform: translateY(85%); /* Slide down leaving just a peek */
+        }
+        
+        /* Hint Animation */
+        .animate-bounce-horizontal {
+            animation: bounceH 2s infinite;
+        }
+        @keyframes bounceH {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
     </style>
 </head>
 <body>
@@ -90,35 +93,35 @@
         const imageSources = {
             "Cover": {
                 unsplash: "https://images.unsplash.com/photo-1528127269322-539801943592?q=95&w=2400&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Halong+Bay+Vietnam+Aerial+View"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Halong+Bay+Vietnam+Vertical+Wallpaper"
             },
             "Hanoi": {
                 unsplash: "https://images.unsplash.com/photo-1555658636-6e4a36218be7?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Hanoi+Street+Old+Quarter"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Hanoi+Old+Quarter+Street+Vertical"
             },
             "Halong": {
                 unsplash: "https://images.unsplash.com/photo-1503900389295-107292c20359?q=95&w=1200&auto=format&fit=crop", 
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Classic+Halong+Bay+Limestone"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Halong+Bay+Limestone+Vertical"
             },
             "DaNang": {
                 unsplash: "https://images.unsplash.com/photo-1590414235027-2987db8cf541?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Golden+Bridge+Da+Nang"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Golden+Bridge+Da+Nang+Vertical"
             },
             "HoiAn": {
                 unsplash: "https://images.unsplash.com/photo-1552550446-2870749684dc?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Hoi+An+Lanterns"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Hoi+An+Lanterns+Vertical"
             },
             "Saigon": {
                 unsplash: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Tan+Dinh+Church+Pink"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Tan+Dinh+Church+Pink+Vertical"
             },
             "Mekong": {
                 unsplash: "https://images.unsplash.com/photo-1599707367072-cd6ad66acc40?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Mekong+Delta+Boat"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Mekong+Delta+Boat+Vertical"
             },
             "Departure": {
                 unsplash: "https://images.unsplash.com/photo-1566329336427-70c6706b3869?q=95&w=1200&auto=format&fit=crop",
-                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Independence+Palace+Vietnam"
+                bing: "https://tse2.mm.bing.net/th?w=1080&h=1920&c=7&rs=1&q=Independence+Palace+Vietnam+Vertical"
             }
         };
 
@@ -203,32 +206,57 @@
         ];
 
         let currentPage = 0;
+        let isFullScreen = false; // New state for immersive mode
         const container = document.getElementById('app-container');
 
-        // --- Touch Swipe Logic ---
+        // --- Touch Logic ---
         let touchStartX = 0;
         let touchEndX = 0;
 
         function handleTouchStart(e) {
+            // Don't interfere if touching slider or buttons
+            if(e.target.closest('button')) return;
             touchStartX = e.changedTouches[0].screenX;
         }
 
         function handleTouchEnd(e) {
+            if(e.target.closest('button')) return;
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
         }
 
         function handleSwipe() {
-            const SWIPE_THRESHOLD = 50;
+            const SWIPE_THRESHOLD = 60;
             if (touchEndX < touchStartX - SWIPE_THRESHOLD) {
-                nextSlide(); // Swipe Left -> Next
+                nextSlide(); 
             }
             if (touchEndX > touchStartX + SWIPE_THRESHOLD) {
-                prevSlide(); // Swipe Right -> Prev
+                prevSlide();
+            }
+        }
+
+        // --- Toggle Full Screen Logic ---
+        function toggleFullScreen() {
+            isFullScreen = !isFullScreen;
+            const sheet = document.getElementById('content-sheet');
+            const toggleBtnIcon = document.getElementById('toggle-icon');
+            const toggleText = document.getElementById('toggle-text');
+            
+            if (isFullScreen) {
+                sheet.classList.add('sheet-hidden');
+                toggleBtnIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />`; // Arrow Down
+                toggleText.textContent = "显示详情";
+            } else {
+                sheet.classList.remove('sheet-hidden');
+                toggleBtnIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`; // Eye
+                toggleText.textContent = "查看全图";
             }
         }
 
         function render() {
+            // Reset state on page change
+            isFullScreen = false; 
+            
             container.innerHTML = '';
             const content = document.createElement('div');
             content.className = 'w-full h-full relative slide-enter overflow-hidden';
@@ -239,24 +267,18 @@
             const unsplashSrc = imageSources[imgKey].unsplash;
             const bingSrc = imageSources[imgKey].bing;
 
-            // Responsive Layout:
-            // Mobile: Image Top (40%), Content Bottom Sheet (60%)
-            // Desktop: Image Left (50%), Content Right (50%)
-            
             content.innerHTML = `
-                <!-- Background Image Layer -->
+                <!-- Background Layer -->
                 <div class="absolute inset-0 z-0 bg-[#F2F0EB]">
+                    <!-- Force object-center to ensure main subject (hands/church) is visible -->
                     <img 
                         src="${unsplashSrc}" 
-                        class="w-full h-full object-cover opacity-100 md:opacity-90 ken-burns"
+                        class="w-full h-full object-cover object-center opacity-100 md:opacity-90 ken-burns"
                         onload="this.style.opacity=1"
                         onerror="this.src='${bingSrc}'" 
                         alt="Background"
                     />
-                    <!-- Overlay Gradient -->
-                    <!-- Mobile: Dark gradient from bottom to read text -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:bg-gradient-to-r md:from-[#F2F0EB]/20 md:to-transparent"></div>
-                    ${isCover ? '<div class="absolute inset-0 bg-black/30 backdrop-blur-[1px]"></div>' : ''}
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30 md:bg-gradient-to-r md:from-[#F2F0EB]/20 md:to-transparent pointer-events-none"></div>
                 </div>
 
                 <!-- Interactive Layer -->
@@ -268,7 +290,6 @@
             requestAnimationFrame(() => content.classList.add('slide-enter-active'));
             container.appendChild(content);
             
-            // Add Touch Listeners
             container.addEventListener('touchstart', handleTouchStart, false);
             container.addEventListener('touchend', handleTouchEnd, false);
             bindEvents();
@@ -276,45 +297,24 @@
 
         function renderCoverContent() {
             return `
-                <div class="w-full h-full flex flex-col justify-end md:justify-center items-center pb-16 md:pb-0 px-6">
+                <div class="w-full h-full flex flex-col justify-end md:justify-center items-center pb-20 md:pb-0 px-8">
                     <div class="max-w-5xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center md:text-left">
-                        
-                        <div class="space-y-6 text-white drop-shadow-md">
+                        <div class="space-y-6 text-white drop-shadow-lg">
                             <div class="flex items-center justify-center md:justify-start space-x-3 font-medium tracking-[0.3em] uppercase text-xs animate-pulse opacity-90">
                                 <span class="w-8 h-[1px] bg-white"></span>
                                 <span>Vietnam 2025</span>
                             </div>
-                            
                             <h1 class="text-5xl md:text-8xl font-serif font-bold leading-[0.95] tracking-tight text-white">
                                 Vietnam<br/>
                                 <span class="text-white/90 font-light italic text-4xl md:text-6xl">Grand Tour</span>
                             </h1>
-                            
-                            <p class="text-base md:text-xl font-light max-w-md mx-auto md:mx-0 leading-relaxed md:border-l-2 border-white/50 md:pl-6 text-white/90">
-                                南北纵贯 · 6晚7天<br/>
-                                河内 · 岘港 · 胡志明
+                            <p class="text-base md:text-xl font-light max-w-md mx-auto md:mx-0 leading-relaxed text-white/90">
+                                南北纵贯 · 6晚7天<br/>河内 · 岘港 · 胡志明
                             </p>
-                            
                             <button id="btn-start" class="w-full md:w-auto mt-8 px-8 py-4 bg-[#F2F0EB] text-[#5C5C5C] rounded-full font-medium text-lg active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-lg safe-pb">
                                 开始旅程
-                                <svg class="w-5 h-5 text-morandi-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                                <svg class="w-5 h-5 text-[#7D9D9C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                             </button>
-                        </div>
-
-                        <!-- Desktop Only Card -->
-                        <div class="hidden lg:block justify-self-end">
-                            <div class="glass-card p-8 rounded-[2rem] space-y-6 w-72 bg-white/80 border-white/40 backdrop-blur-xl">
-                                <div class="flex justify-between items-end border-b border-[#5C5C5C]/10 pb-4">
-                                    <div class="text-[#5C5C5C]">
-                                        <div class="text-5xl font-serif">7</div>
-                                        <div class="text-xs text-[#888] uppercase tracking-widest mt-1">Days</div>
-                                    </div>
-                                    <div class="text-right text-[#5C5C5C]">
-                                        <div class="text-5xl font-serif">3</div>
-                                        <div class="text-xs text-[#888] uppercase tracking-widest mt-1">Cities</div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -322,49 +322,58 @@
         }
 
         function renderDayContent(data) {
+            // Mobile: Top Spacer h-[55%] (Show more image) + Bottom Sheet
             return `
-                <!-- Mobile Layout: Spacer for Image (Top) + Sheet (Bottom) -->
-                <!-- Desktop Layout: Glass Panel (Left/Center) -->
-                
                 <div class="w-full h-full flex flex-col md:flex-row">
-                    <!-- Spacer for Mobile Image Visibility -->
-                    <div class="h-[35%] w-full md:hidden flex items-start justify-between p-6 safe-pt text-white drop-shadow-md">
-                         <button id="btn-home-mobile" class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest backdrop-blur-md bg-black/10 px-3 py-1.5 rounded-full">
-                            ← Home
+                    
+                    <!-- Mobile Top Area (Image Visibility Zone) -->
+                    <div class="h-[55%] w-full md:hidden flex flex-col justify-between p-6 safe-pt text-white drop-shadow-md relative z-0 transition-all duration-500" id="image-zone">
+                        <!-- Top Bar -->
+                        <div class="flex justify-between items-start">
+                            <button id="btn-home-mobile" class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest backdrop-blur-md bg-black/20 px-3 py-1.5 rounded-full">
+                                ← Home
+                            </button>
+                            <div class="font-serif text-3xl opacity-90">${data.day}<span class="text-xs font-sans opacity-70">/07</span></div>
+                        </div>
+
+                        <!-- Immersive Toggle Button -->
+                        <button id="btn-toggle-view" class="self-end mb-4 backdrop-blur-md bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full flex items-center gap-2 text-xs font-medium transition-all shadow-lg border border-white/20">
+                            <svg id="toggle-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <span id="toggle-text">查看全图</span>
                         </button>
-                        <div class="font-serif text-2xl">${data.day}<span class="text-xs font-sans opacity-80">/07</span></div>
                     </div>
 
                     <!-- Content Sheet -->
-                    <div class="flex-1 md:w-[48%] lg:w-[42%] md:h-full glass-panel flex flex-col p-6 md:p-12 overflow-hidden rounded-t-[2rem] md:rounded-none md:rounded-r-none shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-2xl transition-all">
+                    <div id="content-sheet" class="flex-1 md:w-[48%] lg:w-[42%] md:h-full glass-panel flex flex-col p-6 md:p-12 overflow-hidden rounded-t-[2rem] md:rounded-none md:rounded-r-none shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-2xl relative z-10">
                         
                         <!-- Desktop Nav -->
                         <div class="hidden md:flex justify-between items-center mb-8">
                             <button id="btn-home" class="text-[#888] hover:text-[#5C5C5C] flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors group">
                                 <span class="group-hover:-translate-x-1 transition-transform">←</span> Back
                             </button>
-                            <div class="text-morandi-green font-mono text-sm font-medium bg-white/50 px-3 py-1 rounded-full">DAY 0${data.day}</div>
+                            <div class="text-[#7D9D9C] font-mono text-sm font-medium bg-white/50 px-3 py-1 rounded-full">DAY 0${data.day}</div>
                         </div>
 
-                        <!-- Scrollable Content Area -->
-                        <div class="overflow-y-auto no-scrollbar flex-1 pb-safe">
-                            <!-- Draggable Handle visual for mobile -->
-                            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 md:hidden"></div>
+                        <!-- Drag Handle (Visual) -->
+                        <div class="w-12 h-1.5 bg-gray-300/80 rounded-full mx-auto mb-6 md:hidden cursor-pointer" onclick="toggleFullScreen()"></div>
 
-                            <!-- Main Title -->
+                        <!-- Scrollable Content -->
+                        <div class="overflow-y-auto no-scrollbar flex-1 pb-safe">
                             <div class="mb-6">
                                 <span class="inline-block px-3 py-1 rounded-full bg-[#EAE8E3] text-[10px] font-bold text-[#7D9D9C] mb-3 uppercase tracking-wider">${data.region}</span>
                                 <h2 class="text-2xl md:text-4xl font-serif font-bold text-[#4A4A4A] mb-1 leading-tight whitespace-nowrap tracking-tight">${data.title}</h2>
                                 <p class="text-sm md:text-lg text-[#888] font-light italic">${data.subtitle}</p>
                             </div>
 
-                            <!-- Highlights List -->
                             <div class="space-y-4 mb-8">
                                 <h3 class="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-[0.2em] mb-1">Highlights</h3>
                                 <ul class="space-y-3">
                                     ${data.highlights.map(h => `
                                         <li class="flex items-start group">
-                                            <span class="w-5 h-5 rounded-full bg-white border border-[#E6DCD3] flex items-center justify-center mr-3 text-morandi-green mt-0.5 shrink-0 shadow-sm">
+                                            <span class="w-5 h-5 rounded-full bg-white border border-[#E6DCD3] flex items-center justify-center mr-3 text-[#7D9D9C] mt-0.5 shrink-0 shadow-sm">
                                                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                             </span>
                                             <span class="text-[#666] leading-snug text-sm">
@@ -375,7 +384,6 @@
                                 </ul>
                             </div>
 
-                            <!-- Bento Grid Cards (Compact) -->
                             <div class="grid grid-cols-2 gap-2 mb-6">
                                 <div class="glass-card p-3 rounded-xl bg-white/40">
                                     <div class="text-[#D48C76] text-[10px] font-bold uppercase tracking-wider mb-1">🍴 Must Eat</div>
@@ -388,7 +396,7 @@
                             </div>
                         </div>
 
-                        <!-- Bottom Controls (Fixed) -->
+                        <!-- Footer Controls -->
                         <div class="mt-auto pt-4 border-t border-[#E6DCD3] flex justify-between items-center safe-pb">
                             <div class="flex gap-1.5">
                                 ${itinerary.map((_, i) => `
@@ -406,7 +414,6 @@
                         </div>
                     </div>
 
-                    <!-- Desktop Right Side Click Area -->
                     <div class="hidden md:block flex-1 h-full z-10 cursor-pointer group" id="click-area-next">
                          <div class="w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/10 backdrop-blur-[2px]">
                             <span class="text-white text-sm font-bold tracking-[0.3em] uppercase border-2 border-white/50 px-8 py-3 rounded-full shadow-xl backdrop-blur-md">Next →</span>
@@ -423,6 +430,7 @@
             document.getElementById('btn-prev')?.addEventListener('click', prevSlide);
             document.getElementById('btn-next')?.addEventListener('click', nextSlide);
             document.getElementById('click-area-next')?.addEventListener('click', nextSlide);
+            document.getElementById('btn-toggle-view')?.addEventListener('click', toggleFullScreen);
         }
 
         function nextSlide() {
@@ -434,14 +442,12 @@
             render();
         }
 
-        // Prevent default touch behaviors for smoother app-like feel
         document.addEventListener('touchmove', function(e) {
             if(!e.target.closest('.overflow-y-auto')) {
                 e.preventDefault();
             }
         }, { passive: false });
 
-        // Init
         render();
 
     </script>
