@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#F2F0EB">
+    <title>Vietnam Grand Tour - H5 Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --app-height: 100dvh; /* Dynamic Viewport Height for mobile browsers */
+        }
+
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #F2F0EB;
+            color: #5C5C5C;
+            height: var(--app-height);
+            width: 100vw;
+            overflow: hidden; /* Prevent body scroll */
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .font-serif { font-family: 'Playfair Display', serif; }
+        
+        /* H5 Slide Transition */
+        .slide-enter { 
+            opacity: 0; 
+            transform: translateY(20px) scale(0.98); 
+        }
+        .slide-enter-active {
+            opacity: 1; 
+            transform: translateY(0) scale(1); 
+            transition: all 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+        
+        /* Glassmorphism - Adaptive for Mobile */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85); /* Higher opacity for mobile readability */
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
+        }
+        
+        @media (min-width: 768px) {
+            .glass-panel {
+                background: rgba(255, 255, 255, 0.75);
+                border-right: 1px solid rgba(255, 255, 255, 0.5);
+                border-top: none;
+                box-shadow: 20px 0 40px rgba(0,0,0,0.03);
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Ken Burns Effect */
+        .ken-burns {
+            animation: kenBurns 25s ease-out infinite alternate;
+        }
+        @keyframes kenBurns {
+            from { transform: scale(1); }
+            to { transform: scale(1.15); }
+        }
+
+        /* Hide Scrollbar but keep functionality */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Safe Area padding for iPhone X+ */
+        .safe-pb { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Utility for Morandi colors */
+        .text-morandi-green { color: #7D9D9C; }
+        .bg-morandi-green { background-color: #7D9D9C; }
+    </style>
+</head>
+<body>
+
+    <!-- App Container -->
+    <div id="app-container" class="w-full h-full relative"></div>
+
+    <script>
+        // --- Image Data ---
+        const imageSources = {
+            "Cover": {
+                unsplash: "https://images.unsplash.com/photo-1528127269322-539801943592?q=95&w=2400&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Halong+Bay+Vietnam+Aerial+View"
+            },
+            "Hanoi": {
+                unsplash: "https://images.unsplash.com/photo-1555658636-6e4a36218be7?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Hanoi+Street+Old+Quarter"
+            },
+            "Halong": {
+                unsplash: "https://images.unsplash.com/photo-1503900389295-107292c20359?q=95&w=1200&auto=format&fit=crop", 
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Classic+Halong+Bay+Limestone"
+            },
+            "DaNang": {
+                unsplash: "https://images.unsplash.com/photo-1590414235027-2987db8cf541?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Golden+Bridge+Da+Nang"
+            },
+            "HoiAn": {
+                unsplash: "https://images.unsplash.com/photo-1552550446-2870749684dc?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Hoi+An+Lanterns"
+            },
+            "Saigon": {
+                unsplash: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Tan+Dinh+Church+Pink"
+            },
+            "Mekong": {
+                unsplash: "https://images.unsplash.com/photo-1599707367072-cd6ad66acc40?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Mekong+Delta+Boat"
+            },
+            "Departure": {
+                unsplash: "https://images.unsplash.com/photo-1566329336427-70c6706b3869?q=95&w=1200&auto=format&fit=crop",
+                bing: "https://tse2.mm.bing.net/th?w=1920&h=1080&c=7&rs=1&q=Independence+Palace+Vietnam"
+            }
+        };
+
+        const itinerary = [
+            {
+                day: 1,
+                region: "Hanoi",
+                title: "迷失三十六行街",
+                subtitle: "Arrival & Old Quarter",
+                highlights: ["抵达内排国际机场 (HAN)", "还剑湖与红色栖旭桥", "人力三轮车穿梭三十六行街", "打卡圣约瑟夫大教堂", "水上木偶戏或啤酒街"],
+                food: "Pho Bo (河粉), Bun Cha",
+                stay: "河内老城区 (Old Quarter)",
+                tips: "摩托车极多，过马路请保持匀速。",
+                imgKey: "Hanoi"
+            },
+            {
+                day: 2,
+                region: "Halong Bay",
+                title: "海上桂林巡游",
+                subtitle: "World Heritage Site",
+                highlights: ["早晨出发前往下龙湾", "登船享用海鲜午餐", "探索惊讶洞与英雄岛全景", "体验皮划艇穿越穿洞", "晚班机飞往岘港"],
+                food: "船上海鲜, 岘港大排档",
+                stay: "岘港海边酒店 (My Khe)",
+                tips: "建议预订豪华日游船。",
+                imgKey: "Halong"
+            },
+            {
+                day: 3,
+                region: "Da Nang",
+                title: "佛手金桥",
+                subtitle: "Ba Na Hills",
+                highlights: ["世界最长缆车上巴拿山", "打卡云端佛手金桥", "法式城堡小镇游览", "美溪沙滩踏浪", "龙桥夜景(周末喷火)"],
+                food: "Mi Quang, Banh Xeo",
+                stay: "岘港海边酒店",
+                tips: "山顶气温较低，带薄外套。",
+                imgKey: "DaNang"
+            },
+            {
+                day: 4,
+                region: "Hoi An",
+                title: "灯笼古镇之夜",
+                subtitle: "Ancient Town",
+                highlights: ["前往会安古镇", "日本廊桥与福建会馆", "定制一套奥黛 (Ao Dai)", "秋盆河畔咖啡馆发呆", "夜游古镇放水灯"],
+                food: "Cao Lau, White Rose",
+                stay: "会安古镇周边度假村",
+                tips: "清晨7点前去古镇拍照无人。",
+                imgKey: "HoiAn"
+            },
+            {
+                day: 5,
+                region: "Ho Chi Minh",
+                title: "飞往东方巴黎",
+                subtitle: "Colonial Architecture",
+                highlights: ["飞往胡志明市", "粉红教堂 (Tan Dinh)", "中央邮局寄明信片", "西贡王公圣母教堂", "Bitexco金融塔夜景"],
+                food: "Com Tam (碎米饭)",
+                stay: "第一区 (District 1)",
+                tips: "路边使用手机请抓紧。",
+                imgKey: "Saigon"
+            },
+            {
+                day: 6,
+                region: "Mekong Delta",
+                title: "湄公河丛林探险",
+                subtitle: "Tropical Waterway",
+                highlights: ["湄公河三角洲一日游", "机动船游览宽阔河面", "独木舟穿梭椰林水巷", "参观椰子糖工厂", "范五老街感受夜生活"],
+                food: "象耳鱼, 炸春卷, 椰子水",
+                stay: "第一区 (District 1)",
+                tips: "请随身携带驱蚊水。",
+                imgKey: "Mekong"
+            },
+            {
+                day: 7,
+                region: "Departure",
+                title: "再见，越南",
+                subtitle: "History & Shopping",
+                highlights: ["战争遗迹博物馆/统一宫", "滨城市场购买伴手礼", "Highlands Coffee", "前往新山一机场", "结束愉快的旅程"],
+                food: "法式大餐或精致越菜",
+                stay: "温暖的家",
+                tips: "滨城市场建议5折砍价。",
+                imgKey: "Departure"
+            }
+        ];
+
+        let currentPage = 0;
+        const container = document.getElementById('app-container');
+
+        // --- Touch Swipe Logic ---
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function handleTouchStart(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        }
+
+        function handleTouchEnd(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }
+
+        function handleSwipe() {
+            const SWIPE_THRESHOLD = 50;
+            if (touchEndX < touchStartX - SWIPE_THRESHOLD) {
+                nextSlide(); // Swipe Left -> Next
+            }
+            if (touchEndX > touchStartX + SWIPE_THRESHOLD) {
+                prevSlide(); // Swipe Right -> Prev
+            }
+        }
+
+        function render() {
+            container.innerHTML = '';
+            const content = document.createElement('div');
+            content.className = 'w-full h-full relative slide-enter overflow-hidden';
+            
+            const isCover = currentPage === 0;
+            const data = isCover ? null : itinerary[currentPage - 1];
+            const imgKey = isCover ? "Cover" : data.imgKey;
+            const unsplashSrc = imageSources[imgKey].unsplash;
+            const bingSrc = imageSources[imgKey].bing;
+
+            // Responsive Layout:
+            // Mobile: Image Top (40%), Content Bottom Sheet (60%)
+            // Desktop: Image Left (50%), Content Right (50%)
+            
+            content.innerHTML = `
+                <!-- Background Image Layer -->
+                <div class="absolute inset-0 z-0 bg-[#F2F0EB]">
+                    <img 
+                        src="${unsplashSrc}" 
+                        class="w-full h-full object-cover opacity-100 md:opacity-90 ken-burns"
+                        onload="this.style.opacity=1"
+                        onerror="this.src='${bingSrc}'" 
+                        alt="Background"
+                    />
+                    <!-- Overlay Gradient -->
+                    <!-- Mobile: Dark gradient from bottom to read text -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent md:bg-gradient-to-r md:from-[#F2F0EB]/20 md:to-transparent"></div>
+                    ${isCover ? '<div class="absolute inset-0 bg-black/30 backdrop-blur-[1px]"></div>' : ''}
+                </div>
+
+                <!-- Interactive Layer -->
+                <div class="relative z-10 w-full h-full flex flex-col md:flex-row md:items-center md:justify-center">
+                    ${isCover ? renderCoverContent() : renderDayContent(data)}
+                </div>
+            `;
+
+            requestAnimationFrame(() => content.classList.add('slide-enter-active'));
+            container.appendChild(content);
+            
+            // Add Touch Listeners
+            container.addEventListener('touchstart', handleTouchStart, false);
+            container.addEventListener('touchend', handleTouchEnd, false);
+            bindEvents();
+        }
+
+        function renderCoverContent() {
+            return `
+                <div class="w-full h-full flex flex-col justify-end md:justify-center items-center pb-16 md:pb-0 px-6">
+                    <div class="max-w-5xl w-full mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center text-center md:text-left">
+                        
+                        <div class="space-y-6 text-white drop-shadow-md">
+                            <div class="flex items-center justify-center md:justify-start space-x-3 font-medium tracking-[0.3em] uppercase text-xs animate-pulse opacity-90">
+                                <span class="w-8 h-[1px] bg-white"></span>
+                                <span>Vietnam 2025</span>
+                            </div>
+                            
+                            <h1 class="text-5xl md:text-8xl font-serif font-bold leading-[0.95] tracking-tight text-white">
+                                Vietnam<br/>
+                                <span class="text-white/90 font-light italic text-4xl md:text-6xl">Grand Tour</span>
+                            </h1>
+                            
+                            <p class="text-base md:text-xl font-light max-w-md mx-auto md:mx-0 leading-relaxed md:border-l-2 border-white/50 md:pl-6 text-white/90">
+                                南北纵贯 · 6晚7天<br/>
+                                河内 · 岘港 · 胡志明
+                            </p>
+                            
+                            <button id="btn-start" class="w-full md:w-auto mt-8 px-8 py-4 bg-[#F2F0EB] text-[#5C5C5C] rounded-full font-medium text-lg active:scale-95 transition-transform flex items-center justify-center gap-3 shadow-lg safe-pb">
+                                开始旅程
+                                <svg class="w-5 h-5 text-morandi-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- Desktop Only Card -->
+                        <div class="hidden lg:block justify-self-end">
+                            <div class="glass-card p-8 rounded-[2rem] space-y-6 w-72 bg-white/80 border-white/40 backdrop-blur-xl">
+                                <div class="flex justify-between items-end border-b border-[#5C5C5C]/10 pb-4">
+                                    <div class="text-[#5C5C5C]">
+                                        <div class="text-5xl font-serif">7</div>
+                                        <div class="text-xs text-[#888] uppercase tracking-widest mt-1">Days</div>
+                                    </div>
+                                    <div class="text-right text-[#5C5C5C]">
+                                        <div class="text-5xl font-serif">3</div>
+                                        <div class="text-xs text-[#888] uppercase tracking-widest mt-1">Cities</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDayContent(data) {
+            return `
+                <!-- Mobile Layout: Spacer for Image (Top) + Sheet (Bottom) -->
+                <!-- Desktop Layout: Glass Panel (Left/Center) -->
+                
+                <div class="w-full h-full flex flex-col md:flex-row">
+                    <!-- Spacer for Mobile Image Visibility -->
+                    <div class="h-[35%] w-full md:hidden flex items-start justify-between p-6 safe-pt text-white drop-shadow-md">
+                         <button id="btn-home-mobile" class="flex items-center gap-2 text-xs font-bold uppercase tracking-widest backdrop-blur-md bg-black/10 px-3 py-1.5 rounded-full">
+                            ← Home
+                        </button>
+                        <div class="font-serif text-2xl">${data.day}<span class="text-xs font-sans opacity-80">/07</span></div>
+                    </div>
+
+                    <!-- Content Sheet -->
+                    <div class="flex-1 md:w-[48%] lg:w-[42%] md:h-full glass-panel flex flex-col p-6 md:p-12 overflow-hidden rounded-t-[2rem] md:rounded-none md:rounded-r-none shadow-[0_-10px_40px_rgba(0,0,0,0.1)] md:shadow-2xl transition-all">
+                        
+                        <!-- Desktop Nav -->
+                        <div class="hidden md:flex justify-between items-center mb-8">
+                            <button id="btn-home" class="text-[#888] hover:text-[#5C5C5C] flex items-center gap-2 text-xs font-bold uppercase tracking-widest transition-colors group">
+                                <span class="group-hover:-translate-x-1 transition-transform">←</span> Back
+                            </button>
+                            <div class="text-morandi-green font-mono text-sm font-medium bg-white/50 px-3 py-1 rounded-full">DAY 0${data.day}</div>
+                        </div>
+
+                        <!-- Scrollable Content Area -->
+                        <div class="overflow-y-auto no-scrollbar flex-1 pb-safe">
+                            <!-- Draggable Handle visual for mobile -->
+                            <div class="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-6 md:hidden"></div>
+
+                            <!-- Main Title -->
+                            <div class="mb-6">
+                                <span class="inline-block px-3 py-1 rounded-full bg-[#EAE8E3] text-[10px] font-bold text-[#7D9D9C] mb-3 uppercase tracking-wider">${data.region}</span>
+                                <h2 class="text-2xl md:text-4xl font-serif font-bold text-[#4A4A4A] mb-1 leading-tight whitespace-nowrap tracking-tight">${data.title}</h2>
+                                <p class="text-sm md:text-lg text-[#888] font-light italic">${data.subtitle}</p>
+                            </div>
+
+                            <!-- Highlights List -->
+                            <div class="space-y-4 mb-8">
+                                <h3 class="text-[10px] font-bold text-[#A0A0A0] uppercase tracking-[0.2em] mb-1">Highlights</h3>
+                                <ul class="space-y-3">
+                                    ${data.highlights.map(h => `
+                                        <li class="flex items-start group">
+                                            <span class="w-5 h-5 rounded-full bg-white border border-[#E6DCD3] flex items-center justify-center mr-3 text-morandi-green mt-0.5 shrink-0 shadow-sm">
+                                                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                            </span>
+                                            <span class="text-[#666] leading-snug text-sm">
+                                                ${h.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#4A4A4A] font-semibold">$1</strong>')}
+                                            </span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+
+                            <!-- Bento Grid Cards (Compact) -->
+                            <div class="grid grid-cols-2 gap-2 mb-6">
+                                <div class="glass-card p-3 rounded-xl bg-white/40">
+                                    <div class="text-[#D48C76] text-[10px] font-bold uppercase tracking-wider mb-1">🍴 Must Eat</div>
+                                    <div class="text-xs text-[#666] font-medium leading-tight">${data.food}</div>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl bg-white/40">
+                                    <div class="text-[#6B8E8D] text-[10px] font-bold uppercase tracking-wider mb-1">💡 Tip</div>
+                                    <div class="text-xs text-[#666] font-medium leading-tight">${data.tips}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Controls (Fixed) -->
+                        <div class="mt-auto pt-4 border-t border-[#E6DCD3] flex justify-between items-center safe-pb">
+                            <div class="flex gap-1.5">
+                                ${itinerary.map((_, i) => `
+                                    <div class="h-1 w-1 rounded-full transition-all duration-300 ${i + 1 === data.day ? 'bg-[#5C5C5C] w-3' : 'bg-[#D1D5DB]'}"></div>
+                                `).join('')}
+                            </div>
+                            <div class="flex gap-3">
+                                <button id="btn-prev" class="w-10 h-10 rounded-full bg-white text-[#5C5C5C] shadow hover:shadow-md flex items-center justify-center active:scale-95 transition-transform border border-[#E6DCD3]" ${data.day === 1 ? 'disabled' : ''}>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                                </button>
+                                <button id="btn-next" class="w-10 h-10 rounded-full bg-[#5C5C5C] text-[#F2F0EB] shadow hover:bg-[#434343] flex items-center justify-center active:scale-95 transition-transform">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Right Side Click Area -->
+                    <div class="hidden md:block flex-1 h-full z-10 cursor-pointer group" id="click-area-next">
+                         <div class="w-full h-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-black/10 backdrop-blur-[2px]">
+                            <span class="text-white text-sm font-bold tracking-[0.3em] uppercase border-2 border-white/50 px-8 py-3 rounded-full shadow-xl backdrop-blur-md">Next →</span>
+                         </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function bindEvents() {
+            document.getElementById('btn-start')?.addEventListener('click', nextSlide);
+            document.getElementById('btn-home')?.addEventListener('click', () => { currentPage = 0; render(); });
+            document.getElementById('btn-home-mobile')?.addEventListener('click', () => { currentPage = 0; render(); });
+            document.getElementById('btn-prev')?.addEventListener('click', prevSlide);
+            document.getElementById('btn-next')?.addEventListener('click', nextSlide);
+            document.getElementById('click-area-next')?.addEventListener('click', nextSlide);
+        }
+
+        function nextSlide() {
+            currentPage = (currentPage === itinerary.length) ? 0 : currentPage + 1;
+            render();
+        }
+        function prevSlide() {
+            currentPage = (currentPage === 0) ? itinerary.length : currentPage - 1;
+            render();
+        }
+
+        // Prevent default touch behaviors for smoother app-like feel
+        document.addEventListener('touchmove', function(e) {
+            if(!e.target.closest('.overflow-y-auto')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // Init
+        render();
+
+    </script>
+</body>
+</html>
