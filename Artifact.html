@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artifact Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow: hidden;
+        }
+        
+        /* 显示模式样式 */
+        #display-mode {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* 编辑模式样式 */
+        #edit-mode {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #editor {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            resize: none;
+        }
+        
+        #submit-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background-color 0.3s;
+        }
+        
+        #submit-btn:hover {
+            background-color: #0056b3;
+        }
+        
+        #submit-btn:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 显示模式 -->
+    <div id="display-mode"></div>
+    
+    <!-- 编辑模式 -->
+    <div id="edit-mode">
+        <textarea id="editor" placeholder="在此输入内容..."></textarea>
+        <button id="submit-btn">提交修改</button>
+    </div>
+    
+    <script>
+        const STORAGE_KEY = 'pageContent';
+        const displayMode = document.getElementById('display-mode');
+        const editMode = document.getElementById('edit-mode');
+        const editor = document.getElementById('editor');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        // 检查是否为编辑模式
+        function isEditMode() {
+            return window.location.search.includes('?edit');
+        }
+        
+        // 获取存储的内容
+        function getStoredContent() {
+            return localStorage.getItem(STORAGE_KEY) || '';
+        }
+        
+        // 保存内容
+        function saveContent(content) {
+            localStorage.setItem(STORAGE_KEY, content);
+        }
+        
+        // 完全替换页面内容
+        function replaceEntirePage(content) {
+            // 在内容开头注入重置样式
+            const resetStyles = `<style>
+                /* 重置关键样式 */
+                html, body {
+                    margin: 0;
+                    padding: 0;
+                    overflow: auto !important;
+                    height: auto !important;
+                    min-height: 100vh;
+                }
+            </style>`;
+            
+            // 如果内容包含 <head> 标签，将样式插入到 head 中
+            if (content.includes('<head>')) {
+                content = content.replace('<head>', '<head>' + resetStyles);
+            } else if (content.includes('<html>')) {
+                // 如果只有 <html> 但没有 <head>，在 <html> 后添加
+                content = content.replace(/<html[^>]*>/, (match) => match + '<head>' + resetStyles + '</head>');
+            } else {
+                // 如果都没有，直接在开头添加
+                content = resetStyles + content;
+            }
+            
+            // 使用 document.open() 清除所有内容
+            document.open();
+            document.write(content);
+            document.close();
+        }
+        
+        // 渲染内容
+        function renderContent() {
+            const content = getStoredContent();
+            
+            // 如果是编辑模式，或者内容为空，都显示编辑界面
+            if (isEditMode() || !content) {
+                // 编辑模式
+                displayMode.style.display = 'none';
+                editMode.style.display = 'block';
+                editor.value = content;
+                editor.focus();
+                setTimeout(checkScrollbar, 0);
+            } else {
+                // 显示模式 - 完全替换页面内容
+                replaceEntirePage(content);
+            }
+        }
+        
+        // 提交按钮点击事件
+        submitBtn.addEventListener('click', function() {
+            const content = editor.value;
+            saveContent(content);
+            
+            // 移除 URL 参数并刷新页面
+            window.location.href = window.location.pathname;
+        });
+        
+        // 检测 textarea 是否有滚动条
+        function checkScrollbar() {
+            const hasScrollbar = editor.scrollHeight > editor.clientHeight;
+            if (hasScrollbar) {
+                submitBtn.style.right = '40px';
+            } else {
+                submitBtn.style.right = '20px';
+            }
+        }
+
+        // 监听 textarea 内容变化和窗口大小变化
+        editor.addEventListener('input', checkScrollbar);
+        window.addEventListener('resize', checkScrollbar);
+
+        // 支持快捷键
+        editor.addEventListener('keydown', function(e) {
+            // Ctrl+S 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                submitBtn.click();
+            }
+            // Ctrl+Enter 保存
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                submitBtn.click();
+            }
+        });
+        
+        // 初始化页面
+        renderContent();
+        
+        // 监听浏览器前进/后退
+        window.addEventListener('popstate', function() {
+            renderContent();
+        });
+    </script>
+</body>
+</html>
